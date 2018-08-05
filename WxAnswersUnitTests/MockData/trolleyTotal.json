@@ -1,0 +1,25 @@
+﻿{
+  "products": [
+    {
+      "name": "string",
+      "price": 100
+    }
+  ],
+  "specials": [
+    {
+      "quantities": [
+        {
+          "name": "string",
+          "quantity": 1
+        }
+      ],
+      "total": 50
+    }
+  ],
+  "quantities": [
+    {
+      "name": "string",
+      "quantity": 2
+    }
+  ]
+}

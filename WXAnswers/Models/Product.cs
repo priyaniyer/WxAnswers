@@ -4,7 +4,7 @@ using System.Text;
 
 namespace WXAnswers.Models
 {
-    class Product
+    public class Product
     {
         public string Name;
 

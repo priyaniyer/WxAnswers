@@ -15,6 +15,7 @@ using System.Linq;
 using System.Web;
 using WXAnswers.ProductAPIs;
 using WXAnswers.DAL;
+using System.Threading.Tasks;
 
 namespace WXAnswers
 {
@@ -24,34 +25,32 @@ namespace WXAnswers
         [FunctionName("user")]
         public static IActionResult User([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "wxAnswers/user")]HttpRequest req, TraceWriter log)
         {
-            log.Info("User Request");
+            log.Info("User Request");            
 
-            var token = ProductDataAccess.GetTokenFromRequest(req);
-
-            return String.IsNullOrEmpty(token)
-                ? new BadRequestObjectResult("Invalid token")
-                : (ActionResult) new OkObjectResult(new UserResponse()
+            return 
+                (ActionResult) new OkObjectResult(new UserResponse()
                 {
                     Name = "test",
-                    Token = token
+                    Token = "1234-455662-22233333-3333"
                 });
         }
 
         [FunctionName("sort")]
-        public static IActionResult Sort([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "wxAnswers/sort")]HttpRequest req, TraceWriter log)
+        public static async Task<IActionResult> Sort([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "wxAnswers/sort")]HttpRequest req, TraceWriter log)
         {
             log.Info("sort Request");
 
-            string sortOption = HttpUtility.UrlDecode(req.Query["sortOption"]);            
+            string sortOption = HttpUtility.UrlDecode(req.Query["sortOption"]);
+            ProductDataAccess productDataAccess = new ProductDataAccess();
 
             if (String.IsNullOrEmpty(sortOption))
             {
                 return new BadRequestObjectResult("Invalid sort option.");
             }
 
-            var products = ProductDataAccess.GetProductsSorted(sortOption);
+            var products = await productDataAccess.GetProductsSortedAsync(sortOption.ToLower());
 
-            if(products.Count() == 0)
+            if(products == null || products.Count() == 0)
             {
                 return new NotFoundObjectResult("No products found to sort");
             }
@@ -60,14 +59,15 @@ namespace WXAnswers
         }
 
         [FunctionName("trolleyCalculator")]
-        public static IActionResult TrolleyCalculator([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "wxAnswers/trolleyCalculator")]HttpRequest req, TraceWriter log)
+        public static async Task<IActionResult> TrolleyCalculator([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "wxAnswers/trolleyCalculator")]HttpRequest req, TraceWriter log)
         {
             log.Info("trolleyCalculator Request");
 
             string requestBody = req.Body.ToString();
             requestBody = new StreamReader(req.Body).ReadToEnd();
+            ProductDataAccess productDataAccess = new ProductDataAccess();
 
-            var totals = ProductDataAccess.GetTrolleyTotals(requestBody);
+            var totals = await productDataAccess.GetTrolleyTotalsAsync(requestBody);
 
             if(totals == 0)
             {

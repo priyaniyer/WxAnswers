@@ -4,7 +4,7 @@ using System.Text;
 
 namespace WXAnswers.Models
 {
-    class ShopperHistory
+    public class ShopperHistory
     {
         public int CustomerId;
 

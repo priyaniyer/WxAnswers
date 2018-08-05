@@ -1,16 +1,18 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading.Tasks;
 using WXAnswers.Models;
 
 namespace WXAnswers.ProductAPIs
 {
     class ProductAPIRequests
     {
-        public static IEnumerable<Product> GetProducts()
+        public async Task<IEnumerable<Product>> GetProductsAsync()
         {
             using (HttpClient client = new HttpClient())
             {
@@ -22,18 +24,18 @@ namespace WXAnswers.ProductAPIs
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
                 // List data response.
-                HttpResponseMessage response = client.GetAsync(urlParameters).Result;
+                HttpResponseMessage response = await client.GetAsync(urlParameters);
                 if (response.IsSuccessStatusCode)
                 {
                     // Parse the response body.
-                    products = response.Content.ReadAsAsync<IEnumerable<Product>>().Result;
+                    products = await response.Content.ReadAsAsync<IEnumerable<Product>>();
                 }
 
                 return products;
             }
         }
 
-        public static IEnumerable<ShopperHistory> GetShopperHistory()
+        public async Task<IEnumerable<ShopperHistory>> GetShopperHistoryAsync()
         {
             using (HttpClient client = new HttpClient())
             {
@@ -45,11 +47,11 @@ namespace WXAnswers.ProductAPIs
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
                 // List data response.
-                HttpResponseMessage response = client.GetAsync(urlParameters).Result;
+                HttpResponseMessage response = await client.GetAsync(urlParameters);
                 if (response.IsSuccessStatusCode)
                 {
                     // Parse the response body.
-                    shopperProducts = response.Content.ReadAsAsync<IEnumerable<ShopperHistory>>().Result;
+                    shopperProducts = await response.Content.ReadAsAsync<IEnumerable<ShopperHistory>>();
                 }
 
                 return shopperProducts;
@@ -58,27 +60,22 @@ namespace WXAnswers.ProductAPIs
 
         }
 
-        public static double GetTrolleyTotals(string jsonRequest)
+        public async Task<double> GetTrolleyTotalsAsync(string jsonBody)
         {
             using (HttpClient client = new HttpClient())
             {
-                //Uri requestUri = new Uri(Constants.TrolleyCalcURL);
                 string requestUri = Constants.TrolleyCalcURL + "?token=" + Constants.Token;
                 double total = 0;
-                //client.BaseAddress = new Uri();
-                //client.DefaultRequestHeaders
-                //      .Accept
-                //      .Add(new MediaTypeWithQualityHeaderValue("application/json"));//ACCEPT header
 
-                StringContent content = new StringContent(jsonRequest,
+                StringContent content = new StringContent(jsonBody,
                                                     Encoding.UTF8,
                                                     "application/json");//CONTENT-TYPE header
 
-                HttpResponseMessage response = client.PostAsync(requestUri, content).Result;
+                HttpResponseMessage response = await client.PostAsync(requestUri, content);
                 if (response.IsSuccessStatusCode)
                 {
                     // Parse the response body.
-                    string stringTotal = response.Content.ReadAsAsync<string>().Result;
+                    string stringTotal = await response.Content.ReadAsAsync<string>();
                     total = Double.TryParse(stringTotal, out double value) ? value : total;
                 }
 

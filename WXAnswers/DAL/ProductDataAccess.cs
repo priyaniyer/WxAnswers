@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using WXAnswers.Models;
 using WXAnswers.ProductAPIs;
 
@@ -13,7 +14,7 @@ namespace WXAnswers.DAL
 {
     class ProductDataAccess
     {
-        public static string GetTokenFromRequest(HttpRequest httpReq)
+        public string GetTokenFromRequest(HttpRequest httpReq)
         {
             string requestBody = new StreamReader(httpReq.Body).ReadToEnd();
             dynamic data = JsonConvert.DeserializeObject(requestBody);
@@ -21,16 +22,18 @@ namespace WXAnswers.DAL
             return token;
 
         }
-        public static IEnumerable<Product> GetProductsSorted(string sortOption)
+        public async Task<IEnumerable<Product>> GetProductsSortedAsync(string sortOption)
         {
             IEnumerable<Product> products = Enumerable.Empty<Product>();
 
             IEnumerable<ShopperHistory> shopperHistory = Enumerable.Empty<ShopperHistory>();
 
+            ProductAPIRequests productAPIRequests = new ProductAPIRequests();
+
             //get products
-            if (sortOption == "Recommended")
+            if (sortOption == "recommended")
             {
-                shopperHistory = ProductAPIRequests.GetShopperHistory();
+                shopperHistory = await productAPIRequests.GetShopperHistoryAsync();
                 products = shopperHistory.SelectMany(sh => sh.Products)
                                     .GroupBy(p => p.Name)
                                     .Select(g => new Product
@@ -42,22 +45,25 @@ namespace WXAnswers.DAL
             }
             else
             {
-                products = ProductAPIRequests.GetProducts();
+                products = await productAPIRequests.GetProductsAsync();
 
                 //sort high
                 switch (sortOption)
                 {
-                    case "High":
+                    case "high":
                         products = products.OrderByDescending(p => p.Price);
                         break;
-                    case "Low":
+                    case "low":
                         products = products.OrderBy(p => p.Price);
                         break;
-                    case "Descending":
-                        products = products.OrderByDescending(p => p.Price);
+                    case "descending":
+                        products = products.OrderByDescending(p => p.Name);
                         break;
-                    case "Ascending":
-                        products = products.OrderBy(p => p.Price);
+                    case "ascending":
+                        products = products.OrderBy(p => p.Name);
+                        break;
+                    default:
+                        products = null;
                         break;
                 }
             }
@@ -65,9 +71,10 @@ namespace WXAnswers.DAL
             return products;
         }
 
-        public static double GetTrolleyTotals(string jsonBody)
+        public Task<double> GetTrolleyTotalsAsync(string jsonBody)
         {
-            return ProductAPIRequests.GetTrolleyTotals(jsonBody);
+            ProductAPIRequests productAPIRequests = new ProductAPIRequests();
+            return productAPIRequests.GetTrolleyTotalsAsync(jsonBody);
         }
     }
 }
