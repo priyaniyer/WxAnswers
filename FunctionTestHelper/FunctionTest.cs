@@ -17,7 +17,7 @@ namespace FunctionTestHelper
     public abstract class FunctionTest
     {
 
-        protected TraceWriter log = new TraceWriter();
+        protected TraceWriter log = new VerboseDiagnosticsTraceWriter();
 
         public HttpRequest HttpRequestSetup(Dictionary<String, StringValues> query, string body)
         {

@@ -60,7 +60,40 @@ namespace WXAnswers.ProductAPIs
 
         }
 
-        public async Task<double> GetTrolleyTotalsAsync(string jsonBody)
+        public double GetTrolleyTotals(string jsonBody)
+        {
+            Order order = Newtonsoft.Json.JsonConvert.DeserializeObject<Order>(jsonBody);
+            double prodTotals = 0.0, specialTotal = 0.0, lowestTotal = 0.0;
+            if (order != null)
+            {
+                IEnumerable<Product> products = order.Products;
+                IEnumerable<Special> specials = order.Specials;
+                IEnumerable<Quantity> quantities = order.Quantities;
+                if (products.Count() == 0 || specials.Count() == 0 || quantities.Count() == 0)
+                {
+                    Console.WriteLine("BadRequest");
+                    return lowestTotal;
+                }
+
+                prodTotals = products.Sum(p => p.Price);
+                if(prodTotals <= 0.0)
+                {
+                    Console.WriteLine("BadRequest");
+                    return lowestTotal;
+                }
+
+                specialTotal = specials.Min(s => s.Total);
+                var totalQty = quantities.First().quantity;
+                lowestTotal = (specialTotal == 0.0 || prodTotals == 0.0)
+                                    ? Math.Max(prodTotals, specialTotal) * totalQty
+                                    : Math.Min(prodTotals, specialTotal) * totalQty;
+                Console.WriteLine($"LowestTotal: {lowestTotal}");
+            }           
+
+            return lowestTotal;
+        }
+
+        public async Task<double> GetTrolleyTotalsAsyncNew(string jsonBody)
         {
             using (HttpClient client = new HttpClient())
             {

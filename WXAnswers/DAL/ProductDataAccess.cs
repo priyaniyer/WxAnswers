@@ -71,10 +71,13 @@ namespace WXAnswers.DAL
             return products;
         }
 
-        public Task<double> GetTrolleyTotalsAsync(string jsonBody)
+        public async Task<double> GetTrolleyTotalsAsync(string jsonBody)
         {
             ProductAPIRequests productAPIRequests = new ProductAPIRequests();
-            return productAPIRequests.GetTrolleyTotalsAsync(jsonBody);
+            return await Task.Run(() => 
+            {
+                return productAPIRequests.GetTrolleyTotals(jsonBody);
+            });
         }
     }
 }
